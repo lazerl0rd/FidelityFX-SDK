@@ -50,6 +50,8 @@ else()
     message(FATAL_ERROR "Unsupported target platform - only supporting x64 and Win32 currently")
 endif()
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # Pre-compile shaders
 set(FFX_AUTO_COMPILE_SHADERS ON CACHE BOOL "Compile shaders automatically as a prebuild step.")
 
