@@ -380,6 +380,7 @@ bool ffxIsSurfaceFormatSRGB(FfxSurfaceFormat fmt)
     case (FFX_SURFACE_FORMAT_R11G11B10_FLOAT):
     case (FFX_SURFACE_FORMAT_R16G16_FLOAT):
     case (FFX_SURFACE_FORMAT_R16G16_UINT):
+    case (FFX_SURFACE_FORMAT_R16G16_SINT):
     case (FFX_SURFACE_FORMAT_R16_FLOAT):
     case (FFX_SURFACE_FORMAT_R16_UINT):
     case (FFX_SURFACE_FORMAT_R16_UNORM):
@@ -475,6 +476,8 @@ VkFormat ffxGetVKSurfaceFormatFromSurfaceFormat(FfxSurfaceFormat fmt)
         return VK_FORMAT_R16G16_SFLOAT;
     case(FFX_SURFACE_FORMAT_R16G16_UINT):
         return VK_FORMAT_R16G16_UINT;
+    case(FFX_SURFACE_FORMAT_R16G16_SINT):
+        return VK_FORMAT_R16G16_SINT;
     case(FFX_SURFACE_FORMAT_R16_FLOAT):
         return VK_FORMAT_R16_SFLOAT;
     case(FFX_SURFACE_FORMAT_R16_UINT):
@@ -528,6 +531,8 @@ VkFormat ffxGetVKUAVFormatFromSurfaceFormat(FfxSurfaceFormat fmt)
         return VK_FORMAT_R16G16_SFLOAT;
     case(FFX_SURFACE_FORMAT_R16G16_UINT):
         return VK_FORMAT_R16G16_UINT;
+    case(FFX_SURFACE_FORMAT_R16G16_SINT):
+        return VK_FORMAT_R16G16_SINT;
     case(FFX_SURFACE_FORMAT_R16_FLOAT):
         return VK_FORMAT_R16_SFLOAT;
     case(FFX_SURFACE_FORMAT_R16_UINT):
@@ -686,6 +691,119 @@ VkImageLayout getVKImageLayoutFromResourceState(FfxResourceStates state)
         FFX_ASSERT_MESSAGE(false, "Image layout flag not yet supported");
         return VK_IMAGE_LAYOUT_GENERAL;
     }
+}
+
+FfxSurfaceFormat ffxGetSurfaceFormatVK(VkFormat format)
+{
+    switch (format) {
+
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+		return FFX_SURFACE_FORMAT_R32G32B32A32_FLOAT;
+
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+		return FFX_SURFACE_FORMAT_R16G16B16A16_FLOAT;
+
+	case VK_FORMAT_R32G32_SFLOAT:
+		return FFX_SURFACE_FORMAT_R32G32_FLOAT;
+
+	case VK_FORMAT_R32_UINT:
+		return FFX_SURFACE_FORMAT_R32_UINT;
+
+	case VK_FORMAT_R8G8B8A8_UNORM:
+		return FFX_SURFACE_FORMAT_R8G8B8A8_UNORM;
+	case VK_FORMAT_R8G8B8A8_SNORM:
+		return FFX_SURFACE_FORMAT_R8G8B8A8_SNORM;
+	case VK_FORMAT_R8G8B8A8_SRGB:
+		return FFX_SURFACE_FORMAT_R8G8B8A8_SRGB;
+
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+		return FFX_SURFACE_FORMAT_R11G11B10_FLOAT;
+
+	case VK_FORMAT_R16G16_SFLOAT:
+		return FFX_SURFACE_FORMAT_R16G16_FLOAT;
+	case VK_FORMAT_R16G16_UINT:
+		return FFX_SURFACE_FORMAT_R16G16_UINT;
+
+	case VK_FORMAT_R16_SFLOAT:
+		return FFX_SURFACE_FORMAT_R16_FLOAT;
+	case VK_FORMAT_R16_UINT:
+		return FFX_SURFACE_FORMAT_R16_UINT;
+	case VK_FORMAT_R16_UNORM:
+		return FFX_SURFACE_FORMAT_R16_UNORM;
+	case VK_FORMAT_R16_SNORM:
+		return FFX_SURFACE_FORMAT_R16_SNORM;
+
+	case VK_FORMAT_R8_UNORM:
+		return FFX_SURFACE_FORMAT_R8_UNORM;
+	case VK_FORMAT_R8_UINT:
+		return FFX_SURFACE_FORMAT_R8_UINT;
+
+	case VK_FORMAT_R8G8_UNORM:
+		return FFX_SURFACE_FORMAT_R8G8_UNORM;
+
+	case VK_FORMAT_R32_SFLOAT:
+		return FFX_SURFACE_FORMAT_R32_FLOAT;
+
+	case VK_FORMAT_UNDEFINED:
+		return FFX_SURFACE_FORMAT_UNKNOWN;
+
+    default:
+        FFX_ASSERT_MESSAGE(false, "Format not yet supported");
+        return FFX_SURFACE_FORMAT_UNKNOWN;
+	}
+}
+
+bool IsDepthVK(VkFormat format)
+{
+    return (format == VK_FORMAT_D16_UNORM) ||
+           (format == VK_FORMAT_D32_SFLOAT) ||
+           (format == VK_FORMAT_D24_UNORM_S8_UINT) ||
+           (format == VK_FORMAT_D32_SFLOAT_S8_UINT);
+}
+
+FfxResourceDescription GetFfxResourceDescriptionVK(VkImageCreateInfo *createInfo)
+{
+    FfxResourceDescription resourceDescription = {};
+
+    // This is valid
+    if (!createInfo)
+        return resourceDescription;
+
+    if (createInfo)
+    {
+        // Set flags properly for resource registration
+        resourceDescription.flags = FFX_RESOURCE_FLAGS_NONE;
+        resourceDescription.usage = IsDepthVK(createInfo->format) ? FFX_RESOURCE_USAGE_DEPTHTARGET : FFX_RESOURCE_USAGE_READ_ONLY;
+        if ((createInfo->usage & VK_IMAGE_USAGE_STORAGE_BIT) == VK_IMAGE_USAGE_STORAGE_BIT)
+            resourceDescription.usage = (FfxResourceUsage)(resourceDescription.usage | FFX_RESOURCE_USAGE_UAV);
+
+        resourceDescription.width    = createInfo->extent.width;
+        resourceDescription.height   = createInfo->extent.height;
+        resourceDescription.depth    = createInfo->extent.width;
+        resourceDescription.mipCount = createInfo->mipLevels;
+        resourceDescription.format   = ffxGetSurfaceFormatVK(createInfo->format);
+
+        switch (createInfo->imageType)
+        {
+        case VK_IMAGE_TYPE_1D:
+            resourceDescription.type = FFX_RESOURCE_TYPE_TEXTURE1D;
+            break;
+        case VK_IMAGE_TYPE_2D:
+            if ((createInfo->flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT) == VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT || createInfo->arrayLayers == 6)
+                resourceDescription.type = FFX_RESOURCE_TYPE_TEXTURE_CUBE;
+            else
+                resourceDescription.type = FFX_RESOURCE_TYPE_TEXTURE2D;
+            break;
+        case VK_IMAGE_TYPE_3D:
+            resourceDescription.type = FFX_RESOURCE_TYPE_TEXTURE3D;
+            break;
+        default:
+            FFX_ASSERT_MESSAGE(false, "FFXInterface: Cauldron: Unsupported texture dimension requested. Please implement.");
+            break;
+        }
+    }
+
+    return resourceDescription;
 }
 
 void addMutableViewForSRV(VkImageViewCreateInfo& imageViewCreateInfo, VkImageViewUsageCreateInfo& imageViewUsageCreateInfo, FfxResourceDescription resourceDescription)

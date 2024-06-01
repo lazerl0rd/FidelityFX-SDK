@@ -39,7 +39,7 @@
 ///
 /// @ingroup ffxHost
 
-#if defined (FFX_GCC)
+#if 1
 /// FidelityFX exported functions
 ///
 /// @ingroup Defines
@@ -242,6 +242,9 @@ typedef enum FfxSurfaceFormat {
     FFX_SURFACE_FORMAT_R8G8B8A8_UNORM,         ///<  8 bit per channel, 4 channel unsigned normalized format
     FFX_SURFACE_FORMAT_R8G8B8A8_SNORM,         ///<  8 bit per channel, 4 channel signed normalized format
     FFX_SURFACE_FORMAT_R8G8B8A8_SRGB,          ///<  8 bit per channel, 4 channel srgb normalized
+    FFX_SURFACE_FORMAT_B8G8R8A8_TYPELESS,      ///<
+    FFX_SURFACE_FORMAT_B8G8R8A8_UNORM,         ///<
+    FFX_SURFACE_FORMAT_B8G8R8A8_SRGB,          ///<
     FFX_SURFACE_FORMAT_R11G11B10_FLOAT,        ///< 32 bit 3 channel float format
     FFX_SURFACE_FORMAT_R16G16_FLOAT,           ///< 16 bit per channel, 2 channel float format
     FFX_SURFACE_FORMAT_R16G16_UINT,            ///< 16 bit per channel, 2 channel unsigned int format

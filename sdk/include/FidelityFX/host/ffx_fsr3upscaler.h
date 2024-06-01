@@ -138,6 +138,7 @@ typedef enum FfxFsr3UpscalerInitializationFlagBits {
     FFX_FSR3UPSCALER_ENABLE_DYNAMIC_RESOLUTION                  = (1<<6),   ///< A bit indicating that the application uses dynamic resolution scaling.
     FFX_FSR3UPSCALER_ENABLE_TEXTURE1D_USAGE                     = (1<<7),   ///< A bit indicating that the backend should use 1D textures.
     FFX_FSR3UPSCALER_ENABLE_DEBUG_CHECKING                      = (1<<8),   ///< A bit indicating that the runtime should check some API values and report issues.
+    FFX_FSR3UPSCALER_ENABLE_DILATED_MOTION_VECTORS              = (1<<9),   ///< A bit indicating that the dilated motion vectors are used.
 } FfxFsr3UpscalerInitializationFlagBits;
 
 /// Pass a string message

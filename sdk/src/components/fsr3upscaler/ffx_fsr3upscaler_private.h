@@ -41,6 +41,8 @@ typedef enum Fs3UpscalerShaderPermutationOptions
     FSR3UPSCALER_SHADER_PERMUTATION_ENABLE_SHARPENING      = (1 << 5),  ///< Enables a supplementary sharpening pass
     FSR3UPSCALER_SHADER_PERMUTATION_FORCE_WAVE64           = (1 << 6),  ///< doesn't map to a define, selects different table
     FSR3UPSCALER_SHADER_PERMUTATION_ALLOW_FP16             = (1 << 7),  ///< Enables fast math computations where possible
+    FSR3UPSCALER_SHADER_PERMUTATION_SKIP_LUMA              = (1 << 8),  ///< Skip Luma lock generation
+    FSR3UPSCALER_SHADER_PERMUTATION_PREDILATED_MOTION_VECTORS = (1 << 9),  ///< Skip motion vector dilation
 } Fs3UpscalerShaderPermutationOptions;
 
 // Constants for FSR3 Upscaler dispatches. Must be kept in sync with cbFSR3Upscaler in ffx_fsr2_callbacks_hlsl.h

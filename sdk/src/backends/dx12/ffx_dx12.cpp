@@ -47,72 +47,6 @@ FfxErrorCode ExecuteGpuJobsDX12(FfxInterface* backendInterface, FfxCommandList c
 
 #define FFX_MAX_RESOURCE_IDENTIFIER_COUNT   (128)
 
-typedef struct BackendContext_DX12 {
-
-    // store for resources and resourceViews
-    typedef struct Resource
-    {
-#ifdef _DEBUG
-        wchar_t                 resourceName[64] = {};
-#endif
-        ID3D12Resource*         resourcePtr;
-        FfxResourceDescription  resourceDescription;
-        FfxResourceStates       initialState;
-        FfxResourceStates       currentState;
-        uint32_t                srvDescIndex;
-        uint32_t                uavDescIndex;
-        uint32_t                uavDescCount;
-    } Resource;
-
-    uint32_t refCount;
-    uint32_t maxEffectContexts;
-
-    ID3D12Device*           device = nullptr;
-
-    FfxGpuJobDescription*   pGpuJobs;
-    uint32_t                gpuJobCount;
-
-    uint32_t                nextRtvDescriptor;
-    ID3D12DescriptorHeap*   descHeapRtvCpu;
-
-    ID3D12DescriptorHeap*   descHeapSrvCpu;
-    ID3D12DescriptorHeap*   descHeapUavCpu;
-    ID3D12DescriptorHeap*   descHeapUavGpu;
-
-    uint32_t                descRingBufferSize;
-    uint32_t                descRingBufferBase;
-    ID3D12DescriptorHeap*   descRingBuffer;
-
-    void*                   constantBufferMem;
-    ID3D12Resource*         constantBufferResource;
-    uint32_t                constantBufferSize;
-    uint32_t                constantBufferOffset;
-    std::mutex              constantBufferMutex;
-
-    D3D12_RESOURCE_BARRIER  barriers[FFX_MAX_BARRIERS];
-    uint32_t                barrierCount;
-
-    typedef struct alignas(32) EffectContext {
-
-        // Resource allocation
-        uint32_t            nextStaticResource;
-        uint32_t            nextDynamicResource;
-
-        // UAV offsets
-        uint32_t            nextStaticUavDescriptor;
-        uint32_t            nextDynamicUavDescriptor;
-
-        // Usage
-        bool                active;
-
-    } EffectContext;
-
-    // Resource holder
-    Resource*               pResources;
-    EffectContext*          pEffectContexts;
-
-} BackendContext_DX12;
-
 FFX_API size_t ffxGetScratchMemorySizeDX12(size_t maxContexts)
 {
     uint32_t resourceArraySize   = FFX_ALIGN_UP(maxContexts * FFX_MAX_RESOURCE_COUNT * sizeof(BackendContext_DX12::Resource), sizeof(uint64_t));
@@ -365,6 +299,12 @@ DXGI_FORMAT ffxGetDX12FormatFromSurfaceFormat(FfxSurfaceFormat surfaceFormat)
             return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         case (FFX_SURFACE_FORMAT_R8G8B8A8_SNORM):
             return DXGI_FORMAT_R8G8B8A8_SNORM;
+        case (FFX_SURFACE_FORMAT_B8G8R8A8_TYPELESS):
+            return DXGI_FORMAT_B8G8R8A8_TYPELESS;
+        case (FFX_SURFACE_FORMAT_B8G8R8A8_UNORM):
+            return DXGI_FORMAT_B8G8R8A8_UNORM;
+        case (FFX_SURFACE_FORMAT_B8G8R8A8_SRGB):
+            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
         case (FFX_SURFACE_FORMAT_R11G11B10_FLOAT):
             return DXGI_FORMAT_R11G11B10_FLOAT;
         case (FFX_SURFACE_FORMAT_R16G16_FLOAT):
@@ -470,6 +410,13 @@ FfxSurfaceFormat ffxGetSurfaceFormatDX12(DXGI_FORMAT format)
         //case DXGI_FORMAT_R8G8B8A8_UINT:
         case DXGI_FORMAT_R8G8B8A8_SNORM:
             return FFX_SURFACE_FORMAT_R8G8B8A8_SNORM;
+
+        case (DXGI_FORMAT_B8G8R8A8_TYPELESS):
+            return FFX_SURFACE_FORMAT_B8G8R8A8_TYPELESS;
+        case (DXGI_FORMAT_B8G8R8A8_UNORM):
+            return FFX_SURFACE_FORMAT_B8G8R8A8_UNORM;
+        case (DXGI_FORMAT_B8G8R8A8_UNORM_SRGB):
+            return FFX_SURFACE_FORMAT_B8G8R8A8_SRGB;
 
         case DXGI_FORMAT_R16G16_TYPELESS:
         case (DXGI_FORMAT_R16G16_FLOAT):

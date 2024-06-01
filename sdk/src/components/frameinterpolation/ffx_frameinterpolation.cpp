@@ -673,7 +673,7 @@ FFX_API FfxErrorCode ffxFrameInterpolationDispatch(FfxFrameInterpolationContext*
 
     if (contextPrivate->constants.HUDLessAttachedFactor == 1) {
 
-        FFX_ASSERT_MESSAGE(params->currentBackBuffer.description.format == params->currentBackBuffer_HUDLess.description.format, "HUDLess and Backbuffer resource formats have to be identical.");
+        //FFX_ASSERT_MESSAGE(params->currentBackBuffer.description.format == params->currentBackBuffer_HUDLess.description.format, "HUDLess and Backbuffer resource formats have to be identical.");
 
         contextPrivate->contextDescription.backendInterface.fpRegisterResource(&contextPrivate->contextDescription.backendInterface, &params->currentBackBuffer, contextPrivate->effectContextId, &contextPrivate->srvResources[FFX_FRAMEINTERPOLATION_RESOURCE_IDENTIFIER_PRESENT_BACKBUFFER]);
         contextPrivate->contextDescription.backendInterface.fpRegisterResource(&contextPrivate->contextDescription.backendInterface, &params->currentBackBuffer_HUDLess, contextPrivate->effectContextId, &contextPrivate->srvResources[FFX_FRAMEINTERPOLATION_RESOURCE_IDENTIFIER_CURRENT_INTERPOLATION_SOURCE]);

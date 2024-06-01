@@ -96,6 +96,7 @@ void FindNearestDepth(FFX_PARAMETER_IN FfxInt32x2 iPxPos, FFX_PARAMETER_IN FfxIn
     }
 }
 
+#if !FFX_FSR3UPSCALER_OPTION_SKIP_LUMA
 FfxFloat32 ComputeLockInputLuma(FfxInt32x2 iPxLrPos)
 {
     //We assume linear data. if non-linear input (sRGB, ...),
@@ -115,6 +116,7 @@ FfxFloat32 ComputeLockInputLuma(FfxInt32x2 iPxLrPos)
 
     return fLockInputLuma;
 }
+#endif // !FFX_FSR3UPSCALER_OPTION_SKIP_LUMA
 
 void ReconstructAndDilate(FfxInt32x2 iPxLrPos)
 {
@@ -131,15 +133,25 @@ void ReconstructAndDilate(FfxInt32x2 iPxLrPos)
     FfxInt32x2 iMotionVectorPos = ComputeHrPosFromLrPos(iNearestDepthCoord);
 #endif
 
-    FfxFloat32x2 fDilatedMotionVector = LoadInputMotionVector(iMotionVectorPos);
+#if FFX_FSR3UPSCALER_OPTION_PREDILATED_MOTION_VECTORS
+    FfxFloat32x2 fDilatedMotionVector = LoadInputMotionVector(iSamplePos); // Passthrough (copy)
+#else
+    FfxFloat32x2 fDilatedMotionVector = LoadInputMotionVector(iMotionVectorPos); // Adjusted sample position
+#endif
+
+    // HACK: MVs have to be clamped because games like The Witcher 3 use out-of-range values
+    fDilatedMotionVector = ffxMin(fDilatedMotionVector, FfxFloat32x2(1.0f, 1.0f));
+    fDilatedMotionVector = ffxMax(fDilatedMotionVector, FfxFloat32x2(-1.0f, -1.0f));
 
     StoreDilatedDepth(iPxLrPos, fDilatedDepth);
     StoreDilatedMotionVector(iPxLrPos, fDilatedMotionVector);
 
     ReconstructPrevDepth(iPxLrPos, fDilatedDepth, fDilatedMotionVector, RenderSize());
 
+#if !FFX_FSR3UPSCALER_OPTION_SKIP_LUMA
     FfxFloat32 fLockInputLuma = ComputeLockInputLuma(iPxLrPos);
     StoreLockInputLuma(iPxLrPos, fLockInputLuma);
+#endif
 }
 
 

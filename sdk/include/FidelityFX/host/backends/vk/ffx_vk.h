@@ -111,6 +111,10 @@ FFX_API FfxResource ffxGetResourceVK(void*  vkResource,
     wchar_t*                                ffxResName,
     FfxResourceStates                       state = FFX_RESOURCE_STATE_COMPUTE_READ);
 
+FFX_API FfxSurfaceFormat ffxGetSurfaceFormatVK(VkFormat format);
+
+FFX_API FfxResourceDescription GetFfxResourceDescriptionVK(VkImageCreateInfo* createInfo);
+
 #if defined(__cplusplus)
 }
 #endif // #if defined(__cplusplus)

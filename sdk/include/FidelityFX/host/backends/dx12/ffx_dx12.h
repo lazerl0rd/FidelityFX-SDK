@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include <mutex>
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <FidelityFX/host/ffx_interface.h>
@@ -144,3 +145,69 @@ typedef FfxErrorCode (*FfxReleaseFiSwapchain)(FfxFrameInterpolationContext* fiCo
 #if defined(__cplusplus)
 }
 #endif // #if defined(__cplusplus)
+
+typedef struct BackendContext_DX12
+{
+    // store for resources and resourceViews
+    typedef struct Resource
+    {
+#ifdef _DEBUG
+        wchar_t resourceName[64] = {};
+#endif
+        ID3D12Resource*        resourcePtr;
+        FfxResourceDescription resourceDescription;
+        FfxResourceStates      initialState;
+        FfxResourceStates      currentState;
+        uint32_t               srvDescIndex;
+        uint32_t               uavDescIndex;
+        uint32_t               uavDescCount;
+    } Resource;
+
+    uint32_t refCount;
+    uint32_t maxEffectContexts;
+
+    ID3D12Device* device = nullptr;
+
+    FfxGpuJobDescription* pGpuJobs;
+    uint32_t              gpuJobCount;
+
+    uint32_t              nextRtvDescriptor;
+    ID3D12DescriptorHeap* descHeapRtvCpu;
+
+    ID3D12DescriptorHeap* descHeapSrvCpu;
+    ID3D12DescriptorHeap* descHeapUavCpu;
+    ID3D12DescriptorHeap* descHeapUavGpu;
+
+    uint32_t              descRingBufferSize;
+    uint32_t              descRingBufferBase;
+    ID3D12DescriptorHeap* descRingBuffer;
+
+    void*           constantBufferMem;
+    ID3D12Resource* constantBufferResource;
+    uint32_t        constantBufferSize;
+    uint32_t        constantBufferOffset;
+    std::mutex      constantBufferMutex;
+
+    D3D12_RESOURCE_BARRIER barriers[FFX_MAX_BARRIERS];
+    uint32_t               barrierCount;
+
+    typedef struct alignas(32) EffectContext
+    {
+        // Resource allocation
+        uint32_t nextStaticResource;
+        uint32_t nextDynamicResource;
+
+        // UAV offsets
+        uint32_t nextStaticUavDescriptor;
+        uint32_t nextDynamicUavDescriptor;
+
+        // Usage
+        bool active;
+
+    } EffectContext;
+
+    // Resource holder
+    Resource*      pResources;
+    EffectContext* pEffectContexts;
+
+} BackendContext_DX12;

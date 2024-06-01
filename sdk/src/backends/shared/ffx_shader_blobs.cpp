@@ -179,6 +179,12 @@ FfxErrorCode ffxIsWave64(FfxEffect effectId, uint32_t permutationOptions, bool& 
 switch (effectId)
     {
 #if defined(FFX_FSR) || defined(FFX_ALL)
+    case FFX_EFFECT_FSR3UPSCALER:
+    case FFX_EFFECT_FRAMEINTERPOLATION:
+    case FFX_EFFECT_OPTICALFLOW:
+        isWave64 = false;
+        return FFX_OK;
+
     case FFX_EFFECT_FSR2:
         return fsr2IsWave64(permutationOptions, isWave64);
 
