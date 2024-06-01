@@ -139,10 +139,6 @@ void ReconstructAndDilate(FfxInt32x2 iPxLrPos)
     FfxFloat32x2 fDilatedMotionVector = LoadInputMotionVector(iMotionVectorPos); // Adjusted sample position
 #endif
 
-    // HACK: MVs have to be clamped because games like The Witcher 3 use out-of-range values
-    fDilatedMotionVector = ffxMin(fDilatedMotionVector, FfxFloat32x2(1.0f, 1.0f));
-    fDilatedMotionVector = ffxMax(fDilatedMotionVector, FfxFloat32x2(-1.0f, -1.0f));
-
     StoreDilatedDepth(iPxLrPos, fDilatedDepth);
     StoreDilatedMotionVector(iPxLrPos, fDilatedMotionVector);
 
